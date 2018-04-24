@@ -83,4 +83,4 @@ class Login_Neteasy_Mail():
 
 
 login = Login_Neteasy_Mail()
-print(login.login('983821194@163.com', 'whf'))
+print(login.login('9838XXXXX4@163.com', 'whf'))
