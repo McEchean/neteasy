@@ -9,6 +9,7 @@ import requests
 import re
 import time
 import json
+import execjs
 
 from http import cookiejar
 
@@ -25,13 +26,8 @@ Post_param = {
     'domains': '163.com',
     'l': 0,
     'pd': 'mail163',
-    'pkid': '',
-    'pw':'',
     'pwdKeyUp': '1',
-    't':'',
-    'tk': '',
     'topURL': "https://mail.163.com/",
-    'un': '',
 }
 
 class Login_Neteasy_Mail():
@@ -41,14 +37,18 @@ class Login_Neteasy_Mail():
         self.session.cookies = cookiejar.LWPCookieJar('cookie.txt')
         self._pkid = self._get_pkid()
         self._token = ''
+        self._pw = ''
 
     def login(self, username, password):
         self._get_init()
         self._token = self._get_token(username)
+        self._pw = self._get_pwd(password)
         Post_param.update({
             'pkid': self._pkid,
             'tk': self._token,
             'un': username,
+            't': int(time.time()*1000),
+            'pw': self._pw,
         })
 
 
@@ -79,6 +79,22 @@ class Login_Neteasy_Mail():
                        'topURL=https%3A%2F%2Fmail.163.com%2F&' \
                        'nocache={1}'.format(self._pkid, int(time.time()*1000))
         self.session.get(url=get_init_utl,headers=self.session.headers)
+
+    def _get_js(self):
+        f = open("encrypt.js", 'r', encoding='ISO-8859-1')
+        line = f.readline()
+        htmlstr = ''
+        while line:
+            htmlstr = htmlstr + line
+            line = f.readline()
+        return htmlstr
+
+    def _get_pwd(self, pwd):
+        jsstr = self._get_js()
+        ctx = execjs.compile(jsstr)
+        return ctx.call('MP.encrypt2', pwd)
+
+
 
 
 
